@@ -8,7 +8,7 @@ MAX_ATTEMPTS = 4
 PASSWORD = "letmein123"  # Change this to your own admin password
 WINNERS_LOG = "winners_log.csv"
 
-# ---------- Persistent Winner Storage ----------
+# ---------- Save Winner to CSV ----------
 def save_winner_name(name):
     if os.path.exists(WINNERS_LOG):
         df = pd.read_csv(WINNERS_LOG)
@@ -19,7 +19,7 @@ def save_winner_name(name):
         df = pd.DataFrame([{"Winner": name}])
         df.to_csv(WINNERS_LOG, index=False)
 
-# ---------- Streamlit Session Initialization ----------
+# ---------- Initialize Session State ----------
 if 'target' not in st.session_state:
     st.session_state.target = random.randint(1, 20)
 if 'attempts' not in st.session_state:
@@ -52,30 +52,45 @@ if name and not st.session_state.game_over:
 
 # ---------- Admin Panel ----------
 with st.expander("🔐 Admin Access"):
-    password = st.text_input("Enter admin password", type="password")
-    if password == 'letmein123':
+    password = st.text_input("Enter admin password", type="password", key="admin_password_input")
+
+    if password == PASSWORD:
         st.success("✅ Admin access granted.")
+
         if os.path.exists(WINNERS_LOG):
             df = pd.read_csv(WINNERS_LOG)
+
             st.subheader("🏆 All-Time Winners:")
-            st.write(df)
-if st.button("🗑️ Clear Winners Log"):
-    if os.path.exists(WINNERS_LOG):
-        os.remove(WINNERS_LOG)
-        st.success("Winners log has been cleared.")
-    else:
-        st.info("No winners log file to delete.")
+            st.dataframe(df)
 
-csv = df.to_csv(index=False).encode('utf-8')
-st.download_button("📥 Download Winners CSV", data=csv, file_name="winners_log.csv", mime="text/csv")
-else:
-    st.info("No winners recorded yet.")
-elif password:
-    st.error("❌ Incorrect password.")
+            # Download CSV
+            csv = df.to_csv(index=False).encode('utf-8')
+            st.download_button("📥 Download Winners CSV", data=csv, file_name="winners_log.csv", mime="text/csv")
 
+            # Delete specific winner
+            st.markdown("---")
+            st.subheader("🗑️ Delete a Winner")
+            selected_winner = st.selectbox("Select a winner to delete", df["Winner"].unique(), key="delete_winner_dropdown")
 
+            if st.button("❌ Delete Selected Winner"):
+                df = df[df["Winner"] != selected_winner]
+                df.to_csv(WINNERS_LOG, index=False)
+                st.success(f"✅ Winner '{selected_winner}' has been removed.")
+                st.experimental_rerun()
 
+            # Clear all winners
+            st.markdown("---")
+            st.warning("🛑 This will permanently clear all winner records.")
+            if st.button("🧹 Clear All Winners"):
+                pd.DataFrame(columns=["Winner"]).to_csv(WINNERS_LOG, index=False)
+                st.success("✅ Winners log has been cleared.")
+                st.experimental_rerun()
 
+        else:
+            st.info("No winners recorded yet.")
+
+    elif password:
+        st.error("❌ Incorrect password.")
 
 # ---------- Restart Game ----------
 if st.session_state.game_over:
@@ -83,6 +98,7 @@ if st.session_state.game_over:
         st.session_state.target = random.randint(1, 20)
         st.session_state.attempts = 0
         st.session_state.game_over = False
+
 
 
 
