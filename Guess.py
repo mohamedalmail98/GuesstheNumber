@@ -86,13 +86,13 @@ with st.expander("🔐 Admin Access"):
                 df_winners = df_winners[df_winners["Winner"] != selected_winner]
                 df_winners.to_csv(WINNERS_LOG, index=False)
                 st.success(f"✅ Winner '{selected_winner}' has been removed.")
-                st.experimental_rerun()
+                st.stop()
 
             st.warning("🧹 This will permanently clear all winner records.")
             if st.button("🧹 Clear All Winners"):
                 pd.DataFrame(columns=["Winner"]).to_csv(WINNERS_LOG, index=False)
                 st.success("✅ Winners log has been cleared.")
-                st.experimental_rerun()
+                st.stop()
         else:
             st.info("No winners recorded yet.")
 
@@ -110,7 +110,7 @@ with st.expander("🔐 Admin Access"):
             if st.button("🧹 Clear All Player Records"):
                 pd.DataFrame(columns=["Player", "Result"]).to_csv(PLAYERS_LOG, index=False)
                 st.success("✅ Player log has been cleared.")
-                st.experimental_rerun()
+                st.stop()
         else:
             st.info("No players recorded yet.")
 
