@@ -30,7 +30,7 @@ if st.button("Submit Guess"):
     if st.session_state.attempt > st.session_state.max_attempts and guess != st.session_state.number:
         st.session_state.result = f"❌ Out of guesses! The number was {st.session_state.number}."
 
-    st.experimental_rerun()
+    st.rerun()
 
 # Display result
 if st.session_state.result:
@@ -40,4 +40,4 @@ if st.session_state.result:
 if st.button("Restart Game"):
     for key in ["number", "attempt", "max_attempts", "result"]:
         st.session_state.pop(key, None)
-    st.experimental_rerun()
+    st.rerun()
