@@ -67,7 +67,7 @@ if st.button("🗑️ Clear Winners Log"):
         st.info("No winners log file to delete.")
 
 csv = df.to_csv(index=False).encode('utf-8')
-            st.download_button("📥 Download Winners CSV", data=csv, file_name="winners_log.csv", mime="text/csv")
+st.download_button("📥 Download Winners CSV", data=csv, file_name="winners_log.csv", mime="text/csv")
         else:
             st.info("No winners recorded yet.")
     elif password:
