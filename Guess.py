@@ -46,12 +46,13 @@ with st.expander("🔐 Admin Access"):
         st.subheader("📋 All Players:")
         st.write(st.session_state.players)
         st.subheader("🏆 Winners:")
-        st.write(st.session_state.winners)
-
+        st.write(list(set(st.session_state.players)))
+        
+        unique_players = list(set(st.session_state.players))
         df = pd.DataFrame({
-            "Player": st.session_state.players,
-            "Winner": [name if name in st.session_state.winners else "" for name in st.session_state.players]
-        })
+    "Player": unique_players,
+    "Winner": [name if name in st.session_state.winners else "" for name in unique_players]
+})
         csv = df.to_csv(index=False).encode('utf-8')
         st.download_button("📥 Download Players CSV", data=csv, file_name="players.csv", mime="text/csv")
     elif password:
