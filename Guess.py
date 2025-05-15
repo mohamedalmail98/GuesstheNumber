@@ -53,7 +53,7 @@ if name and not st.session_state.game_over:
 # ---------- Admin Panel ----------
 with st.expander("🔐 Admin Access"):
     password = st.text_input("Enter admin password", type="password")
-    if password == letmein123:
+    if password == 'letmein123':
         st.success("✅ Admin access granted.")
         if os.path.exists(WINNERS_LOG):
             df = pd.read_csv(WINNERS_LOG)
