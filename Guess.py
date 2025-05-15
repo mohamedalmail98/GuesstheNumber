@@ -1,5 +1,6 @@
 import streamlit as st
 import random
+import pandas as pd
 
 # Initialize session state
 if 'target' not in st.session_state:
@@ -15,7 +16,7 @@ if 'winners' not in st.session_state:
 
 st.title("🎯 Guess the Number Game!")
 
-# Input for player's name
+# Name input for player
 name = st.text_input("Enter your name:")
 
 if name:
@@ -37,17 +38,27 @@ if name:
             else:
                 st.warning(f"❗ Too high! Try a lower number. Attempts left: {4 - st.session_state.attempts}")
 
-# Results display
-if st.session_state.game_over:
-    st.subheader("📋 Players who tried the game:")
-    st.write(set(st.session_state.players))
-
-    st.subheader("🏆 Winners:")
-    if st.session_state.winners:
+# Admin-only view (secret password box)
+with st.expander("🔐 Admin Access"):
+    password = st.text_input("Enter admin password", type="password")
+    if password == "letmein123":  # change this to your own secret password
+        st.success("Admin access granted.")
+        st.subheader("📋 All Players:")
+        st.write(st.session_state.players)
+        st.subheader("🏆 Winners:")
         st.write(st.session_state.winners)
-    else:
-        st.write("No one won this time!")
 
+        df = pd.DataFrame({
+            "Player": st.session_state.players,
+            "Winner": [name if name in st.session_state.winners else "" for name in st.session_state.players]
+        })
+        csv = df.to_csv(index=False).encode('utf-8')
+        st.download_button("📥 Download Players CSV", data=csv, file_name="players.csv", mime="text/csv")
+    elif password:
+        st.error("Incorrect password.")
+
+# Restart the game
+if st.session_state.game_over:
     if st.button("Restart Game"):
         st.session_state.target = random.randint(1, 20)
         st.session_state.attempts = 0
