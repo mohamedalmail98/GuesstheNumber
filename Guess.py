@@ -76,7 +76,7 @@ if st.session_state.game_over:
 
 # ---------- Admin Panel ----------
 with st.expander("🔐 Admin Access"):
-    password = st.text_input("Enter admin password", type="password")
+    password = st.text_input("Enter admin password", type="password", key="admin_password_input")
 
     if password == 'letmein123':
         st.success("✅ Admin access granted.")
