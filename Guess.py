@@ -66,6 +66,13 @@ with st.expander("🔐 Admin Access"):
             st.info("No winners recorded yet.")
     elif password:
         st.error("❌ Incorrect password.")
+        if st.button("🗑️ Clear Winners Log"):
+    if os.path.exists(WINNERS_LOG):
+        os.remove(WINNERS_LOG)
+        st.success("Winners log has been cleared.")
+    else:
+        st.info("No winners log file to delete.")
+
 
 # ---------- Restart Game ----------
 if st.session_state.game_over:
