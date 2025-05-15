@@ -1,7 +1,7 @@
 import streamlit as st
 import random
 
-# Initialize session state variables
+# Initialize session state
 if 'target' not in st.session_state:
     st.session_state.target = random.randint(1, 20)
 if 'attempts' not in st.session_state:
@@ -15,10 +15,9 @@ if 'winners' not in st.session_state:
 
 st.title("🎯 Guess the Number Game!")
 
-# Input for player name
+# Input for player's name
 name = st.text_input("Enter your name:")
 
-# Allow input only if name is entered and game isn't over
 if name:
     guess = st.number_input("Guess a number between 1 and 20:", min_value=1, max_value=20, step=1)
     if st.button("Submit Guess") and not st.session_state.game_over:
@@ -33,9 +32,12 @@ if name:
             st.error(f"❌ Game over! You've used all attempts. The number was {st.session_state.target}.")
             st.session_state.game_over = True
         else:
-            st.info(f"Wrong guess, try again! Attempts left: {4 - st.session_state.attempts}")
+            if guess < st.session_state.target:
+                st.warning(f"❗ Too low! Try a higher number. Attempts left: {4 - st.session_state.attempts}")
+            else:
+                st.warning(f"❗ Too high! Try a lower number. Attempts left: {4 - st.session_state.attempts}")
 
-# Show results after game ends
+# Results display
 if st.session_state.game_over:
     st.subheader("📋 Players who tried the game:")
     st.write(set(st.session_state.players))
