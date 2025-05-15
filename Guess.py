@@ -67,27 +67,4 @@ if st.session_state.game_over:
         st.session_state.players = []
         st.session_state.winners = []
 
-import smtplib
-from email.message import EmailMessage
-
-def notify_admin(name):
-    msg = EmailMessage()
-    msg.set_content(f"🎮 A new player just tried your game: Guess the Number")
-    msg["Subject"] = "New Game Attempt"
-    msg["From"] = "mohammeda.almail@gmail.com"
-    msg["To"] = "mohammeda.almail@gmail.com"
-
-    # Replace below with your real credentials (or better: use environment variables)
-    smtp_server = "smtp.gmail.com"
-    smtp_port = 587
-    sender_email = "mohammeda.almail@gmail.com"
-    sender_password = "kanoon7787"
-
-    try:
-        with smtplib.SMTP(smtp_server, smtp_port) as server:
-            server.starttls()
-            server.login(sender_email, sender_password)
-            server.send_message(msg)
-    except Exception as e:
-        st.warning(f"Could not send email: {e}")
 
