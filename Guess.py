@@ -24,6 +24,8 @@ if name:
     if st.button("Submit Guess") and not st.session_state.game_over:
         st.session_state.attempts += 1
         st.session_state.players.append(name)
+        save_winner_name(name)
+
 
         if guess == st.session_state.target:
             st.success(f"🎉 Congrats {name}! You guessed the correct number!")
@@ -66,5 +68,18 @@ if st.session_state.game_over:
         st.session_state.game_over = False
         st.session_state.players = []
         st.session_state.winners = []
+
+def save_winner_name(name):
+    filename = "winners_log.csv"
+    if os.path.exists(filename):
+        df = pd.read_csv(filename)
+        if name not in df["Winner"].values:
+            df = df.append({"Winner": name}, ignore_index=True)
+            df.to_csv(filename, index=False)
+    else:
+        df = pd.DataFrame([{"Winner": name}])
+        df.to_csv(filename, index=False)
+
+
 
 
