@@ -1,43 +1,54 @@
 import streamlit as st
 import random
 
-st.title("🎲 Number Guessing Game")
+# Initialize session state variables
+if 'target' not in st.session_state:
+    st.session_state.target = random.randint(1, 20)
+if 'attempts' not in st.session_state:
+    st.session_state.attempts = 0
+if 'game_over' not in st.session_state:
+    st.session_state.game_over = False
+if 'players' not in st.session_state:
+    st.session_state.players = []
+if 'winners' not in st.session_state:
+    st.session_state.winners = []
 
-# Initialize session state
-if "number" not in st.session_state:
-    st.session_state.number = random.randint(1, 100)
-    st.session_state.attempt = 1
-    st.session_state.max_attempts = 4
-    st.session_state.result = ""
+st.title("🎯 Guess the Number Game!")
 
-# Show current attempt
-st.write(f"Attempt {st.session_state.attempt}/{st.session_state.max_attempts}")
+# Input for player name
+name = st.text_input("Enter your name:")
 
-# Get user's guess
-guess = st.number_input("Enter your guess (1-100):", min_value=1, max_value=100, step=1)
+# Allow input only if name is entered and game isn't over
+if name:
+    guess = st.number_input("Guess a number between 1 and 20:", min_value=1, max_value=20, step=1)
+    if st.button("Submit Guess") and not st.session_state.game_over:
+        st.session_state.attempts += 1
+        st.session_state.players.append(name)
 
-if st.button("Submit Guess"):
-    if st.session_state.attempt <= st.session_state.max_attempts:
-        if guess < st.session_state.number:
-            st.session_state.result = "Too low ⬇️"
-        elif guess > st.session_state.number:
-            st.session_state.result = "Too high ⬆️"
+        if guess == st.session_state.target:
+            st.success(f"🎉 Congrats {name}! You guessed the correct number!")
+            st.session_state.winners.append(name)
+            st.session_state.game_over = True
+        elif st.session_state.attempts >= 4:
+            st.error(f"❌ Game over! You've used all attempts. The number was {st.session_state.target}.")
+            st.session_state.game_over = True
         else:
-            st.session_state.result = "🎉 Correct! You guessed the number!"
-        st.session_state.attempt += 1
+            st.info(f"Wrong guess, try again! Attempts left: {4 - st.session_state.attempts}")
 
-    # End of game
-    if st.session_state.attempt > st.session_state.max_attempts and guess != st.session_state.number:
-        st.session_state.result = f"❌ Out of guesses! The number was {st.session_state.number}."
+# Show results after game ends
+if st.session_state.game_over:
+    st.subheader("📋 Players who tried the game:")
+    st.write(set(st.session_state.players))
 
-    st.rerun()
+    st.subheader("🏆 Winners:")
+    if st.session_state.winners:
+        st.write(st.session_state.winners)
+    else:
+        st.write("No one won this time!")
 
-# Display result
-if st.session_state.result:
-    st.write(st.session_state.result)
-
-# Restart game
-if st.button("Restart Game"):
-    for key in ["number", "attempt", "max_attempts", "result"]:
-        st.session_state.pop(key, None)
-    st.rerun()
+    if st.button("Restart Game"):
+        st.session_state.target = random.randint(1, 20)
+        st.session_state.attempts = 0
+        st.session_state.game_over = False
+        st.session_state.players = []
+        st.session_state.winners = []
