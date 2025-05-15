@@ -59,6 +59,12 @@ with st.expander("🔐 Admin Access"):
             df = pd.read_csv(WINNERS_LOG)
             st.subheader("🏆 All-Time Winners:")
             st.write(df)
+if st.button("🗑️ Clear Winners Log"):
+    if os.path.exists(WINNERS_LOG):
+        os.remove(WINNERS_LOG)
+        st.success("Winners log has been cleared.")
+    else:
+        st.info("No winners log file to delete.")
 
             csv = df.to_csv(index=False).encode('utf-8')
             st.download_button("📥 Download Winners CSV", data=csv, file_name="winners_log.csv", mime="text/csv")
@@ -67,12 +73,7 @@ with st.expander("🔐 Admin Access"):
     elif password:
         st.error("❌ Incorrect password.")
 
-if st.button("🗑️ Clear Winners Log"):
-    if os.path.exists(WINNERS_LOG):
-        os.remove(WINNERS_LOG)
-        st.success("Winners log has been cleared.")
-    else:
-        st.info("No winners log file to delete.")
+
 
 
 
