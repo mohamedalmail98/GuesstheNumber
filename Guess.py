@@ -69,7 +69,7 @@ if name and not st.session_state.game_over:
 with st.expander("🔐 Admin Access"):
     password = st.text_input("Enter admin password", type="password", key="admin_password_input")
 
-    if password == PASSWORD:
+    if password == 'letmein7787:
         st.success("✅ Admin access granted.")
 
         # Winners Log
