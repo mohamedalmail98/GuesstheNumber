@@ -5,10 +5,21 @@ import os
 
 # ---------- Configuration ----------
 MAX_ATTEMPTS = 4
-PASSWORD = "letmein123"  # Change this to your own admin password
+PASSWORD = "letmein123"
 WINNERS_LOG = "winners_log.csv"
+PLAYERS_LOG = "players_log.csv"
 
-# ---------- Save Winner to CSV ----------
+# ---------- Save to Players Log ----------
+def log_player(name, result):
+    entry = pd.DataFrame([{"Player": name, "Result": result}])
+    if os.path.exists(PLAYERS_LOG):
+        df = pd.read_csv(PLAYERS_LOG)
+        df = pd.concat([df, entry], ignore_index=True)
+    else:
+        df = entry
+    df.to_csv(PLAYERS_LOG, index=False)
+
+# ---------- Save to Winners Log ----------
 def save_winner_name(name):
     if os.path.exists(WINNERS_LOG):
         df = pd.read_csv(WINNERS_LOG)
@@ -26,6 +37,8 @@ if 'attempts' not in st.session_state:
     st.session_state.attempts = 0
 if 'game_over' not in st.session_state:
     st.session_state.game_over = False
+if 'logged' not in st.session_state:
+    st.session_state.logged = False
 
 st.title("🎯 Guess the Number Game!")
 
@@ -40,9 +53,11 @@ if name and not st.session_state.game_over:
         if guess == st.session_state.target:
             st.success(f"🎉 Congrats {name}! You guessed the correct number!")
             save_winner_name(name)
+            log_player(name, "Won")
             st.session_state.game_over = True
         elif st.session_state.attempts >= MAX_ATTEMPTS:
             st.error(f"❌ Game over! You've used all {MAX_ATTEMPTS} attempts. The number was {st.session_state.target}.")
+            log_player(name, "Lost")
             st.session_state.game_over = True
         else:
             if guess < st.session_state.target:
@@ -57,37 +72,47 @@ with st.expander("🔐 Admin Access"):
     if password == PASSWORD:
         st.success("✅ Admin access granted.")
 
+        # Winners Log
         if os.path.exists(WINNERS_LOG):
-            df = pd.read_csv(WINNERS_LOG)
-
+            df_winners = pd.read_csv(WINNERS_LOG)
             st.subheader("🏆 All-Time Winners:")
-            st.dataframe(df)
+            st.dataframe(df_winners)
 
-            # Download CSV
-            csv = df.to_csv(index=False).encode('utf-8')
+            csv = df_winners.to_csv(index=False).encode('utf-8')
             st.download_button("📥 Download Winners CSV", data=csv, file_name="winners_log.csv", mime="text/csv")
 
-            # Delete specific winner
-            st.markdown("---")
-            st.subheader("🗑️ Delete a Winner")
-            selected_winner = st.selectbox("Select a winner to delete", df["Winner"].unique(), key="delete_winner_dropdown")
-
+            selected_winner = st.selectbox("Select a winner to delete", df_winners["Winner"].unique(), key="delete_winner_dropdown")
             if st.button("❌ Delete Selected Winner"):
-                df = df[df["Winner"] != selected_winner]
-                df.to_csv(WINNERS_LOG, index=False)
+                df_winners = df_winners[df_winners["Winner"] != selected_winner]
+                df_winners.to_csv(WINNERS_LOG, index=False)
                 st.success(f"✅ Winner '{selected_winner}' has been removed.")
                 st.experimental_rerun()
 
-            # Clear all winners
-            st.markdown("---")
-            st.warning("🛑 This will permanently clear all winner records.")
+            st.warning("🧹 This will permanently clear all winner records.")
             if st.button("🧹 Clear All Winners"):
                 pd.DataFrame(columns=["Winner"]).to_csv(WINNERS_LOG, index=False)
                 st.success("✅ Winners log has been cleared.")
                 st.experimental_rerun()
-
         else:
             st.info("No winners recorded yet.")
+
+        # Players Log
+        st.markdown("---")
+        if os.path.exists(PLAYERS_LOG):
+            df_players = pd.read_csv(PLAYERS_LOG)
+            st.subheader("🧑‍💻 All Players (Winners and Losers):")
+            st.dataframe(df_players)
+
+            csv_players = df_players.to_csv(index=False).encode('utf-8')
+            st.download_button("📥 Download Players CSV", data=csv_players, file_name="players_log.csv", mime="text/csv")
+
+            st.warning("🧹 This will clear all player history.")
+            if st.button("🧹 Clear All Player Records"):
+                pd.DataFrame(columns=["Player", "Result"]).to_csv(PLAYERS_LOG, index=False)
+                st.success("✅ Player log has been cleared.")
+                st.experimental_rerun()
+        else:
+            st.info("No players recorded yet.")
 
     elif password:
         st.error("❌ Incorrect password.")
@@ -98,6 +123,8 @@ if st.session_state.game_over:
         st.session_state.target = random.randint(1, 20)
         st.session_state.attempts = 0
         st.session_state.game_over = False
+        st.session_state.logged = False
+
 
 
 
