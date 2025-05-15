@@ -77,25 +77,41 @@ if st.session_state.game_over:
 # ---------- Admin Panel ----------
 with st.expander("🔐 Admin Access"):
     password = st.text_input("Enter admin password", type="password")
-    if password == PASSWORD:
+
+    if password == 'letmein123':
         st.success("✅ Admin access granted.")
 
+        # Display winners if the log exists
         if os.path.exists(WINNERS_LOG):
             df = pd.read_csv(WINNERS_LOG)
+
             st.subheader("🏆 All-Time Winners:")
-            st.write(df)
+            st.dataframe(df)
 
+            # Download button
             csv = df.to_csv(index=False).encode('utf-8')
-            st.download_button("📥 Download Winners CSV", data=csv, file_name="winners_log.csv", mime="text/csv")
+            st.download_button(
+                label="📥 Download Winners CSV",
+                data=csv,
+                file_name="winners_log.csv",
+                mime="text/csv"
+            )
 
-            # Clear Winners Log Button
+            # Clear winners log
+            st.markdown("---")
+            st.warning("🛑 This will permanently clear all winner records.")
             if st.button("🗑️ Clear Winners Log"):
                 pd.DataFrame(columns=["Winner"]).to_csv(WINNERS_LOG, index=False)
                 st.success("✅ Winners log has been cleared.")
+
         else:
             st.info("No winners recorded yet.")
+
     elif password:
         st.error("❌ Incorrect password.")
+
+
+
 
 
 
