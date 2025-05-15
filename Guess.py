@@ -5,7 +5,7 @@ import os
 
 # ---------- Configuration ----------
 MAX_ATTEMPTS = 4
-PASSWORD = "letmein123"
+PASSWORD = "letmein7787"
 WINNERS_LOG = "winners_log.csv"
 PLAYERS_LOG = "players_log.csv"
 
