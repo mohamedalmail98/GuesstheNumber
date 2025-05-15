@@ -74,6 +74,14 @@ if st.session_state.game_over:
         st.session_state.attempts = 0
         st.session_state.game_over = False
 
+if st.button("🗑️ Clear Winners Log"):
+    if os.path.exists(WINNERS_LOG):
+        os.remove(WINNERS_LOG)
+        st.success("Winners log has been cleared.")
+    else:
+        st.info("No winners log file to delete.")
+
+
 
 
 
