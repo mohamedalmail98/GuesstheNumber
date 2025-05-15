@@ -1,88 +1,79 @@
 import streamlit as st
 import random
 import pandas as pd
+import os
 
-# Initialize session state
+# ---------- Configuration ----------
+MAX_ATTEMPTS = 4
+PASSWORD = "letmein123"  # Change this to your own admin password
+WINNERS_LOG = "winners_log.csv"
+
+# ---------- Persistent Winner Storage ----------
+def save_winner_name(name):
+    if os.path.exists(WINNERS_LOG):
+        df = pd.read_csv(WINNERS_LOG)
+        if name not in df["Winner"].values:
+            df = pd.concat([df, pd.DataFrame([{"Winner": name}])], ignore_index=True)
+            df.to_csv(WINNERS_LOG, index=False)
+    else:
+        df = pd.DataFrame([{"Winner": name}])
+        df.to_csv(WINNERS_LOG, index=False)
+
+# ---------- Streamlit Session Initialization ----------
 if 'target' not in st.session_state:
     st.session_state.target = random.randint(1, 20)
 if 'attempts' not in st.session_state:
     st.session_state.attempts = 0
 if 'game_over' not in st.session_state:
     st.session_state.game_over = False
-if 'players' not in st.session_state:
-    st.session_state.players = []
-if 'winners' not in st.session_state:
-    st.session_state.winners = []
 
 st.title("🎯 Guess the Number Game!")
 
-# Name input for player
+# ---------- Player Input ----------
 name = st.text_input("Enter your name:")
 
-if name:
+if name and not st.session_state.game_over:
     guess = st.number_input("Guess a number between 1 and 20:", min_value=1, max_value=20, step=1)
-    if st.button("Submit Guess") and not st.session_state.game_over:
+    if st.button("Submit Guess"):
         st.session_state.attempts += 1
-        st.session_state.players.append(name)
-
-    else:
-        df = pd.DataFrame([{"Winner": name}])
-        df.to_csv(filename, index=False)
-   
-
 
         if guess == st.session_state.target:
             st.success(f"🎉 Congrats {name}! You guessed the correct number!")
-            st.session_state.winners.append(name)
+            save_winner_name(name)
             st.session_state.game_over = True
-        elif st.session_state.attempts >= 4:
-            st.error(f"❌ Game over! You've used all attempts. The number was {st.session_state.target}.")
+        elif st.session_state.attempts >= MAX_ATTEMPTS:
+            st.error(f"❌ Game over! You've used all {MAX_ATTEMPTS} attempts. The number was {st.session_state.target}.")
             st.session_state.game_over = True
         else:
             if guess < st.session_state.target:
-                st.warning(f"❗ Too low! Try a higher number. Attempts left: {4 - st.session_state.attempts}")
+                st.warning(f"❗ Too low! Try a higher number. Attempts left: {MAX_ATTEMPTS - st.session_state.attempts}")
             else:
-                st.warning(f"❗ Too high! Try a lower number. Attempts left: {4 - st.session_state.attempts}")
+                st.warning(f"❗ Too high! Try a lower number. Attempts left: {MAX_ATTEMPTS - st.session_state.attempts}")
 
-# Admin-only view (secret password box)
+# ---------- Admin Panel ----------
 with st.expander("🔐 Admin Access"):
     password = st.text_input("Enter admin password", type="password")
-    if password == "letmein123":  # change this to your own secret password
-        st.success("Admin access granted.")
-        st.subheader("📋 All Players:")
-        st.write(st.session_state.players)
-        st.subheader("🏆 Winners:")
-        st.write(list(set(st.session_state.players)))
-        
-        unique_players = list(set(st.session_state.players))
-        df = pd.DataFrame({
-    "Player": unique_players,
-    "Winner": [name if name in st.session_state.winners else "" for name in unique_players]
-})
-        csv = df.to_csv(index=False).encode('utf-8')
-        st.download_button("📥 Download Players CSV", data=csv, file_name="players.csv", mime="text/csv")
-    elif password:
-        st.error("Incorrect password.")
+    if password == letmein123:
+        st.success("✅ Admin access granted.")
+        if os.path.exists(WINNERS_LOG):
+            df = pd.read_csv(WINNERS_LOG)
+            st.subheader("🏆 All-Time Winners:")
+            st.write(df)
 
-# Restart the game
+            csv = df.to_csv(index=False).encode('utf-8')
+            st.download_button("📥 Download Winners CSV", data=csv, file_name="winners_log.csv", mime="text/csv")
+        else:
+            st.info("No winners recorded yet.")
+    elif password:
+        st.error("❌ Incorrect password.")
+
+# ---------- Restart Game ----------
 if st.session_state.game_over:
-    if st.button("Restart Game"):
+    if st.button("🔁 Restart Game"):
         st.session_state.target = random.randint(1, 20)
         st.session_state.attempts = 0
         st.session_state.game_over = False
-        st.session_state.players = []
-        st.session_state.winners = []
 
-def save_winner_name(name):
-    filename = "winners_log.csv"
-    if os.path.exists(filename):
-        df = pd.read_csv(filename)
-        if name not in df["Winner"].values:
-            df = df.append({"Winner": name}, ignore_index=True)
-            df.to_csv(filename, index=False)
-    else:
-        df = pd.DataFrame([{"Winner": name}])
-        df.to_csv(filename, index=False)
 
 
 
